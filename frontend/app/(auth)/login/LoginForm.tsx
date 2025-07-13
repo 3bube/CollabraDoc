@@ -18,7 +18,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
-import { getCookie } from "@/lib/utils";
 
 import newRequest from "@/app/api/newRequest";
 import { useAuth } from "@/lib/auth-context";
@@ -58,16 +57,19 @@ export default function LoginForm() {
         }
       );
 
+      console.log(response)
+
       // If login successful
       if (response.status === 200) {
+        const token = response.data.access_token;
         const userData = {
           id: response.data.user.id,
           email: response.data.user.email,
           name: response.data.user.name || "",
         };
 
-        // Update auth context
-        login(null, userData);
+        // Update auth context with token and user data
+        login(token, userData);
 
         // Redirect to dashboard
         router.push("/dashboard");
@@ -126,7 +128,7 @@ export default function LoginForm() {
                   size="icon"
                   className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
                   onClick={() => setShow(!show)}
-                  tabIndex={-1} /* don’t steal focus */
+                  tabIndex={-1} /* don't steal focus */
                 >
                   {show ? (
                     <EyeOff className="h-4 w-4" />
@@ -141,7 +143,7 @@ export default function LoginForm() {
         />
 
         {/* -------- Forgot link -------- */}
-        <div className="flex justify-end">
+        <div className="text-right">
           <Link
             href="/forgot-password"
             className="text-sm text-primary hover:underline"

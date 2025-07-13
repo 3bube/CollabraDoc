@@ -68,7 +68,7 @@ export default function RegisterForm() {
 
     try {
       const res = await fetch(
-        process.env.NEXT_PUBLIC_BACKEND_URL + "/api/auth/signup",
+        process.env.NEXT_PUBLIC_BACKEND_URL + "/auth/signup",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

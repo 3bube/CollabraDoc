@@ -4,7 +4,7 @@ import { cookies } from "next/headers"; // if you need auth/session
 import QuickStats from "@/components/dashboard/QuickStats";
 import RecentDocuments from "@/components/dashboard/RecentDocuments";
 import RightSidebar from "@/components/dashboard/RightSidebar"; // ⇠ needs hooks
-import Header from "@/components/dashboard/Header"; // ⇠ needs hooks
+import HeaderWrapper from "@/components/dashboard/HeaderWrapper"; // ⇠ needs hooks
 import DashboardClient from "@/components/dashboard/DashboardClient"; // holds dialog state
 
 import type { Document, User, Workspace } from "@/lib/data"; // types for API data
@@ -38,7 +38,7 @@ export default async function DashboardPage() {
   return (
     <DashboardClient>
       {/* ── HEADER (client for sidebar toggle etc.) ── */}
-      <Header />
+      <HeaderWrapper />
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -54,7 +54,7 @@ export default async function DashboardPage() {
             <RecentDocuments recentDocs={recentDocs} />
           </div>
 
-          {/* RIGHT SIDEBAR (online users list + “New doc” button) */}
+          {/* RIGHT SIDEBAR (online users list + "New doc" button) */}
           <RightSidebar onlineUsers={onlineUsers} />
         </div>
       </div>

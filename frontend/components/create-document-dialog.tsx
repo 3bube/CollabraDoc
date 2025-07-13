@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Dialog,
@@ -16,6 +16,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { FileText } from 'lucide-react';
+import { documentApi, folderApi, Folder, handleApiError } from '@/lib/api';
+import { TemplateDialog } from './TemplateDialog';
 
 interface CreateDocumentDialogProps {
   open: boolean;
@@ -24,11 +27,35 @@ interface CreateDocumentDialogProps {
 
 export function CreateDocumentDialog({ open, onOpenChange }: CreateDocumentDialogProps) {
   const [title, setTitle] = useState('');
-  const [folder, setFolder] = useState('');
+  const [folder, setFolder] = useState('none');
   const [isPublic, setIsPublic] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [loadingFolders, setLoadingFolders] = useState(false);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const router = useRouter();
+
+  // Load folders when dialog opens
+  useEffect(() => {
+    if (open) {
+      loadFolders();
+    }
+  }, [open]);
+
+  const loadFolders = async () => {
+    setLoadingFolders(true);
+    try {
+      const foldersData = await folderApi.getAll();
+      setFolders(foldersData);
+    } catch (err) {
+      console.error('Failed to load folders:', err);
+      // Don't show error for folder loading, just log it
+    } finally {
+      setLoadingFolders(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,22 +69,25 @@ export function CreateDocumentDialog({ open, onOpenChange }: CreateDocumentDialo
     setIsLoading(true);
 
     try {
-      // Simulate document creation
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const documentData = {
+        title: title.trim(),
+        folder_id: folder === 'none' ? undefined : folder,
+        isPublic,
+        content: ''
+      };
+
+      const newDocument = await documentApi.create(documentData);
       
-      // Generate a mock document ID
-      const newDocId = Math.random().toString(36).substr(2, 9);
-      
-      // Close dialog and router to the new document
+      // Close dialog and navigate to the new document
       onOpenChange(false);
-      router.push(`/doc/${newDocId}`);
+      router.push(`/doc/${newDocument.id}`);
       
       // Reset form
       setTitle('');
-      setFolder('');
+      setFolder('none');
       setIsPublic(false);
     } catch (err) {
-      setError('Failed to create document. Please try again.');
+      setError(handleApiError(err));
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +95,7 @@ export function CreateDocumentDialog({ open, onOpenChange }: CreateDocumentDialo
 
   const handleCancel = () => {
     setTitle('');
-    setFolder('');
+    setFolder('none');
     setIsPublic(false);
     setError('');
     onOpenChange(false);
@@ -96,21 +126,54 @@ export function CreateDocumentDialog({ open, onOpenChange }: CreateDocumentDialo
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
+              disabled={isLoading}
             />
           </div>
 
           <div className="space-y-2">
+            <Label>Template (Optional)</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setTemplateDialogOpen(true)}
+                disabled={isLoading}
+                className="flex-1"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                {selectedTemplate ? 'Change Template' : 'Choose Template'}
+              </Button>
+              {selectedTemplate && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setSelectedTemplate('')}
+                  disabled={isLoading}
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
+            {selectedTemplate && (
+              <p className="text-sm text-muted-foreground">
+                Template: {selectedTemplate}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="folder">Folder</Label>
-            <Select value={folder} onValueChange={setFolder}>
+            <Select value={folder} onValueChange={setFolder} disabled={isLoading || loadingFolders}>
               <SelectTrigger>
-                <SelectValue placeholder="Select a folder (optional)" />
+                <SelectValue placeholder={loadingFolders ? "Loading folders..." : "Select a folder (optional)"} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="engineering">Engineering</SelectItem>
-                <SelectItem value="product">Product</SelectItem>
-                <SelectItem value="design">Design</SelectItem>
-                <SelectItem value="marketing">Marketing</SelectItem>
-                <SelectItem value="general">General</SelectItem>
+                <SelectItem value="none">No folder</SelectItem>
+                {folders.map((folderItem) => (
+                  <SelectItem key={folderItem.id} value={folderItem.id}>
+                    {folderItem.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -126,11 +189,12 @@ export function CreateDocumentDialog({ open, onOpenChange }: CreateDocumentDialo
               id="visibility"
               checked={isPublic}
               onCheckedChange={setIsPublic}
+              disabled={isLoading}
             />
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleCancel}>
+            <Button type="button" variant="outline" onClick={handleCancel} disabled={isLoading}>
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
@@ -139,6 +203,16 @@ export function CreateDocumentDialog({ open, onOpenChange }: CreateDocumentDialo
           </DialogFooter>
         </form>
       </DialogContent>
+
+      {/* Template Dialog */}
+      <TemplateDialog
+        open={templateDialogOpen}
+        onOpenChange={setTemplateDialogOpen}
+        onTemplateSelect={(template) => {
+          setSelectedTemplate(template.name);
+          // You can also pre-fill the content here if needed
+        }}
+      />
     </Dialog>
   );
 }

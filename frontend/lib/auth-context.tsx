@@ -2,74 +2,69 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getCookie } from "./utils"; // Ensure you have a utility to get cookies
 
-interface User {
+export interface User {
   id: string;
   email: string;
-  name?: string;
+  full_name?: string;
+  avatar?: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  accessToken: string | null;
-  login: (token: string | null, user: User) => void;
+  setUser: (user: User | null) => void;
+  isLoading: boolean;
+  login: (token: string, userData: User) => void;
   logout: () => void;
-  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Load user from localStorage on initial mount
   useEffect(() => {
-    // get token from the cookies not local storage
-    const token = getCookie("accessToken");
-    const storedUser = localStorage.getItem("user");
-
-    if (token && storedUser) {
-      setAccessToken(token);
-      setUser(JSON.parse(storedUser));
+    // Load user from localStorage or session
+    const token = localStorage.getItem('token');
+    if (token) {
+      // TODO: Validate token and get user info from backend
+      // For now, create a mock user
+      setUser({
+        id: 'user-1',
+        email: 'user@example.com',
+        full_name: 'John Doe',
+        avatar: '/avatars/user.jpg'
+      });
     }
+    setIsLoading(false);
   }, []);
 
-  const login = (token: string | null, userData: User) => {
+  const login = (token: string, userData: User) => {
+    localStorage.setItem('token', token);
     localStorage.setItem("user", JSON.stringify(userData));
-    setAccessToken(token);
     setUser(userData);
   };
 
   const logout = () => {
-    localStorage.removeItem("accessToken");
+    localStorage.removeItem('token');
     localStorage.removeItem("user");
-    setAccessToken(null);
     setUser(null);
     router.push("/login");
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        accessToken,
-        login,
-        logout,
-        isAuthenticated: !!accessToken,
-      }}
-    >
+    <AuthContext.Provider value={{ user, setUser, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}

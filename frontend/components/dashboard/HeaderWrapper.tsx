@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, type PropsWithChildren } from 'react';
-import { CreateDocumentDialog } from '@/components/create-document-dialog';
+import { useState } from 'react';
+import Header from './Header';
 import { CreateFolderDialog } from '@/components/create-folder-dialog';
-import { useDialog } from '@/context/useDialog';
 import { Folder } from '@/lib/api';
 
-export default function DashboardClient({ children }: PropsWithChildren) {
-  const { open, onOpenChange } = useDialog();
+export default function HeaderWrapper() {
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
 
   const handleCreateFolder = () => {
@@ -21,13 +19,8 @@ export default function DashboardClient({ children }: PropsWithChildren) {
 
   return (
     <>
-      {children}
-
-      <CreateDocumentDialog
-        open={open}
-        onOpenChange={onOpenChange}
-      />
-
+      <Header onCreateFolder={handleCreateFolder} />
+      
       <CreateFolderDialog
         open={folderDialogOpen}
         onOpenChange={setFolderDialogOpen}
@@ -35,4 +28,4 @@ export default function DashboardClient({ children }: PropsWithChildren) {
       />
     </>
   );
-}
+} 

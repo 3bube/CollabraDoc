@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CollabraDoc Frontend
 
-## Getting Started
+This is the Next.js frontend for the CollabraDoc application.
 
-First, run the development server:
+## Setup
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Environment variables:**
+   Create a `.env.local` file in the frontend directory with the following variables:
+   ```
+   NEXT_PUBLIC_API_URL=http://localhost:8000/api
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Features
 
-## Learn More
+- **Document Management**: Create, edit, and organize documents
+- **Folder Organization**: Create folders to organize documents
+- **Real-time Collaboration**: (Coming soon)
+- **User Authentication**: Secure login and registration
+- **Responsive Design**: Works on desktop and mobile
 
-To learn more about Next.js, take a look at the following resources:
+## Components
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Core Components
+- `CreateDocumentDialog` - Dialog for creating new documents
+- `CreateFolderDialog` - Dialog for creating new folders
+- `DashboardClient` - Main dashboard with dialogs
+- `HeaderWrapper` - Header with action buttons
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### API Integration
+- `lib/api.ts` - API service for document and folder operations
+- Error handling and loading states
+- Authentication token management
 
-## Deploy on Vercel
+## API Endpoints Used
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The frontend communicates with the following backend endpoints:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `POST /api/documents/` - Create document
+- `GET /api/documents/` - Get user's documents
+- `POST /api/folders/` - Create folder
+- `GET /api/folders/` - Get user's folders
+
+## Authentication
+
+The frontend expects JWT tokens to be stored in localStorage or sessionStorage with the key `auth_token`. The API service automatically includes this token in requests.
+
+## Development
+
+- Built with Next.js 14
+- TypeScript for type safety
+- Tailwind CSS for styling
+- Shadcn/ui components
+- React hooks for state management

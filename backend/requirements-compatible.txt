@@ -1,0 +1,18 @@
+# Core dependencies
+fastapi>=0.109.0
+uvicorn>=0.27.0
+
+# Database
+pymongo>=4.6.0
+motor>=3.3.0
+dnspython>=2.4.0
+
+# Validation & config
+pydantic>=2.5.0  # Using v2 which works with Python 3.13
+python-dotenv>=1.0.0
+email-validator>=2.0.0
+
+# Auth
+PyJWT>=2.8.0
+passlib>=1.7.4
+python-multipart>=0.0.6

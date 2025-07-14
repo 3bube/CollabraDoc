@@ -8,7 +8,8 @@ pymongo==4.4.1
 motor==3.2.0
 
 # Data validation & config
-pydantic==1.10.12
+pydantic==2.11.7  # Updated to match installed version
+pydantic-settings==2.0.3  # Added for BaseSettings
 python-dotenv==1.0.0
 email-validator==1.3.1
 

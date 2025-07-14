@@ -11,6 +11,11 @@ from core.security import hash_password
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+# Add OPTIONS route handler for CORS preflight requests
+@router.options("/{path:path}")
+async def auth_options_handler(path: str):
+    return Response(status_code=200)
+
 
 @router.post("/signup", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def create_user(

@@ -6,8 +6,12 @@ app = FastAPI(title="CollabraDoc")
 
 app.add_middleware(
     CORSMiddleware,
-       allow_origins=["http://localhost:3000"],  # or your frontend URL
-    # allow_origins=["*"],  # Uncomment this to allow all origins, not recommended
+    allow_origins=[
+        "http://localhost:3000",
+        "https://collabra-doc.vercel.app",
+        "https://www.collabra-doc.vercel.app",
+        "http://collabra-doc.vercel.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
 import {
   SidebarContent,
   SidebarGroup,
@@ -11,9 +11,10 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-} from '@/components/ui/sidebar';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
+} from "@/components/ui/sidebar";
+import { NavItem } from "./NavItem";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import {
   Home,
   Search,
@@ -21,9 +22,9 @@ import {
   FolderOpen,
   FileText,
   Loader2,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { documentApi, folderApi, Document, Folder } from '@/lib/api';
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { documentApi, folderApi, Document, Folder } from "@/lib/api";
 
 const iconMap = { home: Home, search: Search, settings: Settings } as const;
 
@@ -37,7 +38,7 @@ interface DocumentsByPath {
 
 export default function SidebarNav({ navigation }: Props) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  // Remove useSearchParams from here as it's now in NavItem component
   const [documents, setDocuments] = useState<Document[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,18 +48,18 @@ export default function SidebarNav({ navigation }: Props) {
     const fetchData = async () => {
       try {
         setLoading(true);
-        console.log('Fetching documents and folders...');
+        console.log("Fetching documents and folders...");
         const [docsData, foldersData] = await Promise.all([
           documentApi.getAll(),
-          folderApi.getAll()
+          folderApi.getAll(),
         ]);
-        console.log('Documents fetched:', docsData);
-        console.log('Folders fetched:', foldersData);
+        console.log("Documents fetched:", docsData);
+        console.log("Folders fetched:", foldersData);
         setDocuments(docsData);
         setFolders(foldersData);
       } catch (err) {
-        console.error('Failed to fetch data:', err);
-        setError('Failed to load documents and folders');
+        console.error("Failed to fetch data:", err);
+        setError("Failed to load documents and folders");
       } finally {
         setLoading(false);
       }
@@ -69,8 +70,8 @@ export default function SidebarNav({ navigation }: Props) {
 
   // Group documents by folder path
   const documentsByPath = documents.reduce<DocumentsByPath>((acc, doc) => {
-    const folder = folders.find(f => f.id === doc.folder_id);
-    const path = folder ? folder.name : 'Root';
+    const folder = folders.find((f) => f.id === doc.folder_id);
+    const path = folder ? folder.name : "Root";
     if (!acc[path]) {
       acc[path] = [];
     }
@@ -88,22 +89,19 @@ export default function SidebarNav({ navigation }: Props) {
             {navigation.map((item) => {
               const Icon = iconMap[item.icon];
               return (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link
-                      href={item.url}
-                      className={cn(
-                        'flex items-center gap-2 px-3 py-2 rounded-lg transition-colors',
-                        pathname === item.url
-                          ? 'bg-primary text-primary-foreground'
-                          : 'hover:bg-muted'
-                      )}
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <Suspense
+                  key={item.title}
+                  fallback={
+                    <SidebarMenuItem>
+                      <SidebarMenuButton className="hover:bg-accent/50">
+                        <Icon className="mr-2 h-4 w-4" />
+                        <span>{item.title}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  }
+                >
+                  <NavItem title={item.title} url={item.url} icon={Icon} />
+                </Suspense>
               );
             })}
           </SidebarMenu>
@@ -120,12 +118,12 @@ export default function SidebarNav({ navigation }: Props) {
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="ml-2 text-sm text-muted-foreground">Loading...</span>
+                <span className="ml-2 text-sm text-muted-foreground">
+                  Loading...
+                </span>
               </div>
             ) : error ? (
-              <div className="p-4 text-sm text-destructive">
-                {error}
-              </div>
+              <div className="p-4 text-sm text-destructive">{error}</div>
             ) : Object.keys(documentsByPath).length === 0 ? (
               <div className="p-4">
                 <div className="text-sm text-muted-foreground mb-4">
@@ -143,7 +141,9 @@ export default function SidebarNav({ navigation }: Props) {
                         <Link
                           href="/doc/test-doc"
                           className="ml-4 flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors text-sm hover:bg-muted/50 text-muted-foreground"
-                          onClick={() => console.log('Navigating to test document')}
+                          onClick={() =>
+                            console.log("Navigating to test document")
+                          }
                         >
                           <FileText className="h-3 w-3" />
                           <span className="truncate">Test Document</span>
@@ -168,12 +168,18 @@ export default function SidebarNav({ navigation }: Props) {
                           <Link
                             href={`/doc/${doc.id}`}
                             className={cn(
-                              'ml-4 flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors text-sm',
+                              "ml-4 flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors text-sm",
                               pathname === `/doc/${doc.id}`
-                                ? 'bg-muted text-foreground'
-                                : 'hover:bg-muted/50 text-muted-foreground'
+                                ? "bg-muted text-foreground"
+                                : "hover:bg-muted/50 text-muted-foreground"
                             )}
-                            onClick={() => console.log('Navigating to document:', doc.id, doc.title)}
+                            onClick={() =>
+                              console.log(
+                                "Navigating to document:",
+                                doc.id,
+                                doc.title
+                              )
+                            }
                           >
                             <FileText className="h-3 w-3" />
                             <span className="truncate">{doc.title}</span>

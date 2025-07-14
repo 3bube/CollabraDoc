@@ -1,5 +1,6 @@
 // components/layouts/AppLayout.tsx
-import type { PropsWithChildren } from 'react';
+import type { PropsWithChildren } from "react";
+import { Suspense } from "react";
 import {
   SidebarProvider,
   Sidebar,
@@ -8,24 +9,23 @@ import {
   SidebarGroupLabel,
   SidebarGroupContent,
   SidebarTrigger,
-} from '@/components/ui/sidebar';
-import { Separator } from '@/components/ui/separator';
-import { Button } from '@/components/ui/button';
-import { FileText } from 'lucide-react';
+} from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { FileText } from "lucide-react";
 
-import SidebarNav from '@/components/SidebarNav';   // ⬅️ the only client chunk
-import { mockWorkspace } from '@/lib/data';
-import DialogProvider from '@/context/useDialog';
-import { AuthProvider } from '@/lib/auth-context';
+import SidebarNav from "@/components/SidebarNav"; // ⬅️ the only client chunk
+import { mockWorkspace } from "@/lib/data";
+import DialogProvider from "@/context/useDialog";
+import { AuthProvider } from "@/lib/auth-context";
 
 const navigation = [
-  { title: 'Dashboard', url: '/dashboard', icon: 'home' as const },
-  { title: 'Search',    url: '/search',    icon: 'search' as const },
-  { title: 'Settings',  url: '/settings',  icon: 'settings' as const },
+  { title: "Dashboard", url: "/dashboard", icon: "home" as const },
+  { title: "Search", url: "/search", icon: "search" as const },
+  { title: "Settings", url: "/settings", icon: "settings" as const },
 ];
 
 export default function AppLayout({ children }: PropsWithChildren) {
-
   return (
     <SidebarProvider>
       <AuthProvider>
@@ -38,7 +38,9 @@ export default function AppLayout({ children }: PropsWithChildren) {
                   <FileText className="h-4 w-4 text-primary-foreground" />
                 </div>
                 <div>
-                  <h2 className="font-semibold text-sm">{mockWorkspace.name}</h2>
+                  <h2 className="font-semibold text-sm">
+                    {mockWorkspace.name}
+                  </h2>
                   <p className="text-xs text-muted-foreground">
                     {mockWorkspace.members.length} members
                   </p>
@@ -46,9 +48,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
               </div>
 
               {/* 👉 all interactive nav lives here */}
-              <SidebarNav
-                navigation={navigation}
-              />
+              <SidebarNav navigation={navigation} />
             </Sidebar>
 
             {/* Main column */}

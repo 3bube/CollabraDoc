@@ -90,6 +90,9 @@ export const documentApi = {
   getAll: (): Promise<Document[]> =>
     apiRequest<Document[]>('/documents/'),
 
+  search: (q: string): Promise<Document[]> =>
+    apiRequest<Document[]>(`/documents/search?q=${encodeURIComponent(q)}`),
+
   getById: (id: string): Promise<Document> =>
     apiRequest<Document>(`/documents/${id}`),
 

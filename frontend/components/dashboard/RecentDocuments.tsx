@@ -1,4 +1,6 @@
-import React from 'react'
+'use client'
+
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -6,9 +8,32 @@ import { ArrowRight, Clock } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { PresenceAvatars } from '@/components/ui/presence-avatars'
-import { Document } from '@/lib/data'
+import { documentApi } from '@/lib/api'
+import type { Document } from '@/lib/data'
 
-function RecentDocuments({ recentDocs }: { recentDocs: Document[] }) {
+function RecentDocuments() {
+  const [recentDocs, setRecentDocs] = useState<Document[]>([]);
+
+  useEffect(() => {
+    documentApi.getAll().then(docs => {
+      // Transform docs to match frontend Document type if needed
+      const transformed = docs.map((doc: any) => ({
+        id: doc.id,
+        title: doc.title,
+        content: doc.content,
+        lastModified: new Date(doc.updated_at),
+        author: { id: '', name: '', email: '', avatar: '', role: 'viewer' as 'viewer', status: 'offline' as 'offline' },
+        collaborators: [],
+        isPublic: doc.isPublic,
+        tags: [],
+        path: [],
+        version: 1,
+      }));
+      // Sort by lastModified descending and take top 6
+      setRecentDocs(transformed.sort((a, b) => b.lastModified.getTime() - a.lastModified.getTime()).slice(0, 6));
+    }).catch(() => setRecentDocs([]));
+  }, []);
+
   return (
          <Card>
               <CardHeader>

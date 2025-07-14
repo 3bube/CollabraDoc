@@ -23,6 +23,21 @@ async function api<T>(path: string): Promise<T> {
   return res.json();
 }
 
+async function getData() {
+  const [documentsRes, usersRes] = await Promise.all([
+    fetch('http://localhost:8000/documents', { cache: 'no-store', credentials: 'include' }),
+    fetch('http://localhost:8000/users', { cache: 'no-store', credentials: 'include' }),
+  ]);
+  const documents = await documentsRes.json();
+  const users = await usersRes.json();
+  if (!Array.isArray(users)) {
+    console.error('Users API did not return an array:', users);
+    return { documents, users: [], onlineUsers: [] };
+  }
+  const onlineUsers = users.filter((u: any) => u.status === 'online');
+  return { documents, users, onlineUsers };
+}
+
 export default async function DashboardPage() {
   console.log(process.env.NEXT_PUBLIC_BACKEND_URL); // for debugging, ensure this is set
   // ▸ Fetch in parallel
@@ -32,8 +47,7 @@ export default async function DashboardPage() {
   //   api<Workspace>("workspace"),
   // ]);
 
-  const recentDocs = mockDocuments.slice(0, 6) ?? [];
-  const onlineUsers = mockUsers.filter((u) => u.status === "online") ?? 0;
+  const { documents, users, onlineUsers } = await getData();
 
   return (
     <DashboardClient>
@@ -45,13 +59,9 @@ export default async function DashboardPage() {
           {/* MAIN COLUMN */}
           <div className="lg:col-span-3 space-y-8">
             {/* Quick stats + Recent docs are pure display: keep server‑side */}
-            <QuickStats
-              documents={mockDocuments}
-              users={mockUsers}
-              onlineUsers={onlineUsers}
-            />
+            <QuickStats  users={users} onlineUsers={onlineUsers} />
 
-            <RecentDocuments recentDocs={recentDocs} />
+            <RecentDocuments  />
           </div>
 
           {/* RIGHT SIDEBAR (online users list + "New doc" button) */}

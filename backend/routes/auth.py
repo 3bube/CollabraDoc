@@ -40,8 +40,6 @@ def login(
     # With OAuth2PasswordRequestForm, username field contains the email
     email = form_data.username
     password = form_data.password
-
-    response = Response(status_code=status.HTTP_200_OK)
     
     user_doc = db.users.find_one({"email": email})
     if not user_doc:
@@ -60,7 +58,7 @@ def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    token = create_access_token(data={"sub": user_doc["email"]})
+    token = create_access_token(data={"sub": str(user_doc["_id"])})
 
     user_data = {
         "id" : str(user_doc["_id"]),
@@ -68,26 +66,23 @@ def login(
         "email": user_doc["email"]
     }
 
-
-    response = JSONResponse(
+    return JSONResponse(
         status_code=status.HTTP_200_OK,
         content={
             "message": "Login successful",
             "user": user_data,
+            "access_token": token,
         }
     )
 
 
-    # set the token in the response cookies
-    response.set_cookie(
-        key="access_token",
-        value=token,
-        httponly=True,
-        secure=True,  # Set to True if using HTTPS
-        samesite="Lax",  # Adjust based on your CSRF protection strategy
+@router.post("/logout")
+def logout():
+    """Logout user"""
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"message": "Logout successful"}
     )
-
-    return response
     
     
     

@@ -1,25 +1,25 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 from bson import ObjectId
-
-
-class PyObjectId(ObjectId):
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-    
-    @classmethod
-    def validate(cls, v):
-        if not ObjectId.is_valid(v):
-            raise ValueError('Invalid ObjectId')
-        return ObjectId(v)
+from core.database import PyObjectId
 
 
 class UserInDB(BaseModel):
-    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
+    id: Optional[str] = Field(default=None, alias="_id")
     email: str
     password: str
     full_name: Optional[str] = None
+
+    @field_validator('id', mode='before')
+    @classmethod
+    def validate_id(cls, v):
+        if v is None:
+            return v
+        if isinstance(v, ObjectId):
+            return str(v)
+        if isinstance(v, str):
+            return v
+        raise ValueError('Invalid ObjectId')
 
     class Config:
         populate_by_name = True

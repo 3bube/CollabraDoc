@@ -1,9 +1,12 @@
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 pymongo==4.6.0
-pydantic==2.5.0
+pydantic==2.4.2  # Downgraded to avoid Rust dependencies
 pydantic-settings==2.1.0
-python-jose[cryptography]==3.3.0
+python-jose==3.3.0  # Removed [cryptography] extra
+cryptography==41.0.3  # Specify version for pre-built wheel
 python-multipart==0.0.6
 python-dotenv==1.0.0
-passlib[bcrypt]==1.7.4 
+passlib==1.7.4  # Removed [bcrypt] extra
+bcrypt==4.0.1  # Added explicitly with version that has pre-built wheels
+motor==3.3.0  # For async MongoDB operations

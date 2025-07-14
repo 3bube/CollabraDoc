@@ -4,8 +4,10 @@ services:
     runtime: python
     buildCommand: >
       pip install --upgrade pip &&
-      PIP_NO_BUILD_ISOLATION=false pip install --only-binary=:all: -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+      pip install wheel &&
+      pip install gunicorn &&
+      PIP_NO_BUILD_ISOLATION=false pip install --upgrade --no-cache-dir -r requirements.txt
+    startCommand: gunicorn -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT main:app
     autoDeploy: true
     envVars:
       - key: MONGODB_URL
